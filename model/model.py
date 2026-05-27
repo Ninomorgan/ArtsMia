@@ -1,3 +1,4 @@
+import copy
 from contextlib import nullcontext
 
 import networkx as nx
@@ -20,6 +21,46 @@ class Model:
         #for f in self._fermate:
         #    self._idMapFermate[f.id_fermata] = f
 
+       #RICORSIONE
+        self._bestPath=[]
+        self._optCost= 0
+
+    def getOptPath(self, source, lun ):
+        parziale=[source]
+
+        for n in self._graph.neighbors(source):
+            if n.classification == parziale[-1].classification:
+                parziale.append(n)
+                self._ricorsione(parziale,lun)
+                parziale.pop() #back
+
+        return self._optPath, self._optCost
+
+    def _ricorsione(self,parziale,lun):
+        if len(parziale) == lun:
+
+            if self._costo(parziale) < self._optCost:
+                self._optCosto = self._costo(parziale)
+
+                self._optPath = copy.deepcopy(parziale)
+
+            return
+
+        #se arrvio
+        for n in self._graph.neighbors(parziale[-1]):
+            if parziale[-1].classification ==  n.classification :
+                parziale.append(n)
+                self._ricorsione(parziale, lun)
+                parziale.pop()  # back
+
+    def _costo(self,path):
+        #mi calcoal somma dei peis
+        tot= 0
+        for i in range (len(path)-1):
+            tot+= self._graph[path[i]][path[i+1]]["weight"]
+        return tot
+
+
 
     def buildGraph(self):
         #aggiungi nodi
@@ -30,7 +71,6 @@ class Model:
         #self.addEdges3()
         #self.addEdges()
         self.addEdgesV2()
-
 
 
     #metodi get
@@ -82,14 +122,15 @@ class Model:
 
 
 
-
-
     def getBFSNodesFromEdges(self, source): #source rappresenta il nodo di partenza
 
         pass
 
     def getDFSNodesFromEdges(self, source):
       pass
+
+    def getNodeFromID(self, id_oggetto):
+        return self._idMapAO[id_oggetto]
 
     @property
     def artObject(self):
